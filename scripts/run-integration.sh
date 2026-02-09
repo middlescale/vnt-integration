@@ -8,13 +8,13 @@ ARTIFACTS_DIR="${ARTIFACTS_DIR:-$ROOT_DIR/_artifacts}"
 VNT_REPO="${VNT_REPO:-middlescale/vnt}"
 VNTS_REPO="${VNTS_REPO:-middlescale/vnts}"
 VNT_REF="${VNT_REF:-}"
-VNTS_REF="${VNTS_REF:-master}"
+VNTS_REF="${VNTS_REF:-main}"
 
 PORT="${VNT_PORT:-29872}"
 TOKEN="${VNT_TOKEN:-integration}"
 DEVICE_ID="${VNT_DEVICE_ID:-itest-1}"
 DEVICE_NAME="${VNT_DEVICE_NAME:-itest-1}"
-SERVER_ADDR="${VNT_SERVER_ADDR:-vnts:${PORT}}"
+SERVER_ADDR="${VNT_SERVER_ADDR:-127.0.0.1:${PORT}}"
 RUN_SECONDS="${VNT_RUN_SECONDS:-10}"
 
 mkdir -p "$ARTIFACTS_DIR"
@@ -88,14 +88,23 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 echo "Running vnt-cli smoke test for ${RUN_SECONDS}s..."
+VNT_LOG="$ARTIFACTS_DIR/vnt-cli.log"
 set +e
-timeout "${RUN_SECONDS}s" "${RUN_CMD[@]}"
+timeout "${RUN_SECONDS}s" "${RUN_CMD[@]}" >"$VNT_LOG" 2>&1
 STATUS=$?
 set -e
 
-if [ "$STATUS" -ne 0 ] && [ "$STATUS" -ne 124 ]; then
-  echo "vnt-cli exited with status $STATUS" >&2
-  exit "$STATUS"
+ERROR_PATTERN="\\b(error|panic|failed|fatal)\\b"
+if grep -qiE "$ERROR_PATTERN" "$VNT_LOG"; then
+  echo "vnt-cli reported errors (see $VNT_LOG)" >&2
+  tail -n 50 "$VNT_LOG" >&2 || true
+  exit 1
+fi
+
+if [ "$STATUS" -ne 124 ]; then
+  echo "vnt-cli exited before timeout (status $STATUS)" >&2
+  tail -n 50 "$VNT_LOG" >&2 || true
+  exit 1
 fi
 
 echo "Integration smoke test completed."
