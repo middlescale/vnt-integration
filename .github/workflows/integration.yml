@@ -1,0 +1,58 @@
+name: integration
+
+on:
+  push:
+    branches: [ main ]
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      vnt_ref:
+        description: "vnt ref (branch/tag/sha)"
+        default: "main"
+      vnts_ref:
+        description: "vnts ref (branch/tag/sha)"
+        default: "main"
+
+jobs:
+  main:
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    env:
+      VNT_REPO: middlescale/vnt
+      VNTS_REPO: middlescale/vnts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.VNT_REPO }}
+          path: vnt
+          ref: ${{ inputs.vnt_ref || 'main' }}
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.VNTS_REPO }}
+          path: vnts
+          ref: ${{ inputs.vnts_ref || 'main' }}
+      - run: ./scripts/run-integration.sh
+
+  release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    env:
+      VNT_REPO: middlescale/vnt
+      VNTS_REPO: middlescale/vnts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.VNT_REPO }}
+          path: vnt
+          ref: ${{ github.event.release.tag_name }}
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ env.VNTS_REPO }}
+          path: vnts
+          ref: ${{ github.event.release.tag_name }}
+      - run: ./scripts/run-integration.sh

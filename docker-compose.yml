@@ -1,0 +1,8 @@
+services:
+  integration:
+    image: rust:1.85
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    privileged: true
+    command: ["bash", "./scripts/run-integration.sh"]

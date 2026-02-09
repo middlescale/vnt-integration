@@ -1,0 +1,5 @@
+/vnt/
+/vnts/
+/_artifacts/
+/target/
+**/*.rs.bk
