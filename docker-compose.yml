@@ -1,8 +1,10 @@
 services:
   integration:
-    image: rust:1.85
+    image: rust:1.88
     working_dir: /workspace
     volumes:
       - ./:/workspace
+      - ../vnt:/workspace/vnt
+      - ../vnts:/workspace/vnts
     privileged: true
-    command: ["bash", "./scripts/run-integration.sh"]
+    command: [ "bash", "./scripts/run-integration.sh" ]
