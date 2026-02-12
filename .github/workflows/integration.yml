@@ -5,6 +5,8 @@ on:
     branches: [ main ]
   release:
     types: [ published ]
+  repository_dispatch:
+    types: [ vnt_push, vnts_push ]
   workflow_dispatch:
     inputs:
       vnt_ref:
@@ -21,6 +23,8 @@ jobs:
     env:
       VNT_REPO: middlescale/vnt
       VNTS_REPO: middlescale/vnts
+      VNT_REF: ${{ github.event.client_payload.vnt_ref || inputs.vnt_ref || 'main' }}
+      VNTS_REF: ${{ github.event.client_payload.vnts_ref || inputs.vnts_ref || 'main' }}
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -28,12 +32,12 @@ jobs:
         with:
           repository: ${{ env.VNT_REPO }}
           path: vnt
-          ref: ${{ inputs.vnt_ref || 'main' }}
+          ref: ${{ env.VNT_REF }}
       - uses: actions/checkout@v4
         with:
           repository: ${{ env.VNTS_REPO }}
           path: vnts
-          ref: ${{ inputs.vnts_ref || 'main' }}
+          ref: ${{ env.VNTS_REF }}
       - run: ./scripts/run-integration.sh
 
   release:
