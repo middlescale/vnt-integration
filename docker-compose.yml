@@ -3,7 +3,7 @@ services:
     image: rust:1.88
     working_dir: /workspace/vnts
     volumes:
-      - ../vnts:/workspace/vnts
+      - ${VNTS_DIR:-./vnts}:/workspace/vnts
       - ./:/workspace/integration
     command: [ "bash", "/workspace/integration/scripts/compose-vnts.sh" ]
     restart: "no"
@@ -33,7 +33,7 @@ services:
       VNT_SERVER_ADDR: vnts:29872
       VNT_TOKEN: ${VNT_TOKEN:-integration}
     volumes:
-      - ../vnt:/workspace/vnt
+      - ${VNT_DIR:-./vnt}:/workspace/vnt
       - ./:/workspace/integration
     command: [ "bash", "/workspace/integration/scripts/compose-vnt-client.sh" ]
     restart: "no"
@@ -63,7 +63,7 @@ services:
       VNT_LIST_SLEEP: ${VNT_LIST_SLEEP:-1}
       VNT_PING_COUNT: ${VNT_PING_COUNT:-3}
     volumes:
-      - ../vnt:/workspace/vnt
+      - ${VNT_DIR:-./vnt}:/workspace/vnt
       - ./:/workspace/integration
     command: [ "bash", "/workspace/integration/scripts/compose-vnt-client.sh" ]
     restart: "no"

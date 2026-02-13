@@ -1,6 +1,6 @@
 # vnt-integration
 
-This repo is intended to live alongside the vnt and vnts repos in the same parent directory:
+This repo can live alongside the vnt and vnts repos, or contain them as subdirectories.
 
 ```
 parent/
@@ -9,7 +9,15 @@ parent/
   vnts/
 ```
 
-Local run (uses sibling repos by default):
+Or:
+
+```
+vnt-integration/
+  vnt/
+  vnts/
+```
+
+Local run (uses ./vnt and ./vnts by default):
 
 ```
 sudo -v
@@ -29,4 +37,10 @@ You can also override paths:
 
 ```
 VNT_DIR=../vnt VNTS_DIR=../vnts ./scripts/run-integration.sh
+```
+
+For docker compose with sibling repos:
+
+```
+VNT_DIR=../vnt VNTS_DIR=../vnts docker compose up --abort-on-container-exit --exit-code-from vnt1
 ```
