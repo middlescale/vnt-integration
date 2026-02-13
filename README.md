@@ -16,10 +16,13 @@ sudo -v
 ./scripts/run-integration.sh
 ```
 
+The smoke test runs three containers (vnts + 2 vnt clients). The vnt1 container uses
+`vnt-cli --list` to discover the peer virtual IP and verifies ping reachability.
+
 Or use docker compose:
 
 ```
-docker compose up
+docker compose up --abort-on-container-exit --exit-code-from vnt1
 ```
 
 You can also override paths:
