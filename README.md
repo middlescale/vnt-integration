@@ -17,20 +17,20 @@ vnt-integration/
   vnts/
 ```
 
-Local run (uses ./vnt and ./vnts by default):
+Local run (uses ./vnt and ./vnts by default, or sibling dirs if present):
 
 ```
 sudo -v
 ./scripts/run-integration.sh
 ```
 
-The smoke test runs three containers (vnts + 2 vnt clients). The vnt1 container uses
-`vnt-cli --list` to discover the peer virtual IP and verifies ping reachability.
+The smoke test runs one container and starts one vnts process plus two vnt clients in it.
+It uses `vnt-cli --list` to discover peer virtual IPs and verifies ping reachability.
 
-Or use docker compose:
+Or use docker compose (single container):
 
 ```
-docker compose up --abort-on-container-exit --exit-code-from vnt1
+docker compose up
 ```
 
 You can also override paths:
@@ -42,5 +42,5 @@ VNT_DIR=../vnt VNTS_DIR=../vnts ./scripts/run-integration.sh
 For docker compose with sibling repos:
 
 ```
-VNT_DIR=../vnt VNTS_DIR=../vnts docker compose up --abort-on-container-exit --exit-code-from vnt1
+VNT_DIR=../vnt VNTS_DIR=../vnts docker compose up
 ```

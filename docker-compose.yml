@@ -1,69 +1,15 @@
 services:
-  vnts:
+  integration:
     image: rust:1.88
-    working_dir: /workspace/vnts
+    working_dir: /workspace/integration
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
     volumes:
+      - ${VNT_DIR:-./vnt}:/workspace/vnt
       - ${VNTS_DIR:-./vnts}:/workspace/vnts
       - ./:/workspace/integration
-    command: [ "bash", "/workspace/integration/scripts/compose-vnts.sh" ]
-    restart: "no"
-    healthcheck:
-      test: [ "CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/29872'" ]
-      interval: 2s
-      timeout: 1s
-      retries: 120
-      start_period: 180s
-
-  vnt2:
-    image: rust:1.88
-    working_dir: /workspace/integration
-    privileged: true
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    depends_on:
-      vnts:
-        condition: service_healthy
-    environment:
-      VNT_ROLE: client
-      VNT_NAME: client2
-      VNT_ID: itest-2
-      VNT_NIC: vnt-tun2
-      VNT_SERVER_ADDR: vnts:29872
-      VNT_TOKEN: ${VNT_TOKEN:-integration}
-    volumes:
-      - ${VNT_DIR:-./vnt}:/workspace/vnt
-      - ./:/workspace/integration
-    command: [ "bash", "/workspace/integration/scripts/compose-vnt-client.sh" ]
-    restart: "no"
-
-  vnt1:
-    image: rust:1.88
-    working_dir: /workspace/integration
-    privileged: true
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    depends_on:
-      vnts:
-        condition: service_healthy
-      vnt2:
-        condition: service_started
-    environment:
-      VNT_ROLE: tester
-      VNT_NAME: client1
-      VNT_ID: itest-1
-      VNT_PEER_NAME: client2
-      VNT_NIC: vnt-tun1
-      VNT_SERVER_ADDR: vnts:29872
-      VNT_TOKEN: ${VNT_TOKEN:-integration}
-      VNT_LIST_RETRIES: ${VNT_LIST_RETRIES:-30}
-      VNT_LIST_SLEEP: ${VNT_LIST_SLEEP:-1}
-      VNT_PING_COUNT: ${VNT_PING_COUNT:-3}
-    volumes:
-      - ${VNT_DIR:-./vnt}:/workspace/vnt
-      - ./:/workspace/integration
-    command: [ "bash", "/workspace/integration/scripts/compose-vnt-client.sh" ]
+    command: [ "bash", "/workspace/integration/scripts/run-integration.sh" ]
     restart: "no"
