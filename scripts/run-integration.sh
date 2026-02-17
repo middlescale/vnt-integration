@@ -32,23 +32,19 @@ CLIENT2_IP=""
 
 resolve_repo_dirs() {
   if [ -z "$VNT_DIR" ]; then
-    if [ -d "$ROOT_DIR/vnt" ]; then
-      VNT_DIR="$ROOT_DIR/vnt"
-    elif [ -d "$ROOT_DIR/../vnt" ]; then
+    if [ -d "$ROOT_DIR/../vnt" ]; then
       VNT_DIR="$ROOT_DIR/../vnt"
     else
-      echo "vnt directory not found; set VNT_DIR." >&2
+      echo "sibling vnt directory not found at $ROOT_DIR/../vnt; set VNT_DIR." >&2
       exit 1
     fi
   fi
 
   if [ -z "$VNTS_DIR" ]; then
-    if [ -d "$ROOT_DIR/vnts" ]; then
-      VNTS_DIR="$ROOT_DIR/vnts"
-    elif [ -d "$ROOT_DIR/../vnts" ]; then
+    if [ -d "$ROOT_DIR/../vnts" ]; then
       VNTS_DIR="$ROOT_DIR/../vnts"
     else
-      echo "vnts directory not found; set VNTS_DIR." >&2
+      echo "sibling vnts directory not found at $ROOT_DIR/../vnts; set VNTS_DIR." >&2
       exit 1
     fi
   fi

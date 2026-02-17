@@ -1,5 +1,28 @@
 services:
-  integration:
+  builder:
+    image: rust:1.88
+    working_dir: /workspace/integration
+    volumes:
+      - ${VNT_DIR:-./vnt}:/workspace/vnt
+      - ${VNTS_DIR:-./vnts}:/workspace/vnts
+      - ./:/workspace/integration
+      - bins:/workspace/bin
+    command: [ "bash", "/workspace/integration/scripts/compose-build.sh" ]
+    restart: "no"
+
+  vnts:
+    image: rust:1.88
+    working_dir: /workspace/integration
+    depends_on:
+      builder:
+        condition: service_completed_successfully
+    volumes:
+      - ./:/workspace/integration
+      - bins:/workspace/bin
+    command: [ "bash", "-lc", "exec /workspace/bin/vnts --port ${VNT_PORT:-29872}" ]
+    restart: "no"
+
+  client1:
     image: rust:1.88
     working_dir: /workspace/integration
     privileged: true
@@ -7,9 +30,43 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
+    depends_on:
+      vnts:
+        condition: service_started
+    environment:
+      VNT_TOKEN: ${VNT_TOKEN:-integration}
+      VNT_SERVER_ADDR: ${VNT_SERVER_ADDR:-vnts:${VNT_PORT:-29872}}
+      VNT_CLIENT_ID: ${VNT_CLIENT1_ID:-itest-1}
+      VNT_CLIENT_NAME: ${VNT_CLIENT1_NAME:-client1}
+      VNT_CLIENT_NIC: ${VNT_CLIENT1_NIC:-vnt-tun}
     volumes:
-      - ${VNT_DIR:-./vnt}:/workspace/vnt
-      - ${VNTS_DIR:-./vnts}:/workspace/vnts
       - ./:/workspace/integration
-    command: [ "bash", "/workspace/integration/scripts/run-integration.sh" ]
+      - bins:/workspace/bin
+    command: [ "bash", "-lc", "apt-get update -y && apt-get install -y iputils-ping && exec bash /workspace/integration/scripts/compose-client.sh" ]
     restart: "no"
+
+  client2:
+    image: rust:1.88
+    working_dir: /workspace/integration
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    depends_on:
+      vnts:
+        condition: service_started
+    environment:
+      VNT_TOKEN: ${VNT_TOKEN:-integration}
+      VNT_SERVER_ADDR: ${VNT_SERVER_ADDR:-vnts:${VNT_PORT:-29872}}
+      VNT_CLIENT_ID: ${VNT_CLIENT2_ID:-itest-2}
+      VNT_CLIENT_NAME: ${VNT_CLIENT2_NAME:-client2}
+      VNT_CLIENT_NIC: ${VNT_CLIENT2_NIC:-vnt-tun}
+    volumes:
+      - ./:/workspace/integration
+      - bins:/workspace/bin
+    command: [ "bash", "-lc", "apt-get update -y && apt-get install -y iputils-ping && exec bash /workspace/integration/scripts/compose-client.sh" ]
+    restart: "no"
+
+volumes:
+  bins:
