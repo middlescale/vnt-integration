@@ -40,29 +40,7 @@ jobs:
           ref: ${{ env.VNTS_REF }}
       - run: docker compose run --rm builder
       - run: docker compose up -d vnts client1 client2
-      - run: |
-          set -euo pipefail
-          strip_ansi() { sed -r 's/\x1b\[[0-9;]*m//g'; }
-          wait_for_peer_ip() {
-            local service="$1"
-            local peer="$2"
-            local ip=""
-            for _ in $(seq 1 40); do
-              ip="$(docker compose exec -T "$service" /workspace/bin/vnt-cli --list 2>/dev/null | strip_ansi | awk -v name="$peer" 'NR>1 && $1==name {print $2; exit}')"
-              if [ -n "$ip" ]; then
-                echo "$ip"
-                return 0
-              fi
-              sleep 2
-            done
-            return 1
-          }
-
-          client2_ip="$(wait_for_peer_ip client1 client2)"
-          client1_ip="$(wait_for_peer_ip client2 client1)"
-
-          docker compose exec -T client1 ping -c 3 "$client2_ip"
-          docker compose exec -T client2 ping -c 3 "$client1_ip"
+      - run: bash ./scripts/compose-check.sh
       - if: always()
         run: docker compose down -v
 
@@ -87,28 +65,6 @@ jobs:
           ref: ${{ github.event.release.tag_name }}
       - run: docker compose run --rm builder
       - run: docker compose up -d vnts client1 client2
-      - run: |
-          set -euo pipefail
-          strip_ansi() { sed -r 's/\x1b\[[0-9;]*m//g'; }
-          wait_for_peer_ip() {
-            local service="$1"
-            local peer="$2"
-            local ip=""
-            for _ in $(seq 1 40); do
-              ip="$(docker compose exec -T "$service" /workspace/bin/vnt-cli --list 2>/dev/null | strip_ansi | awk -v name="$peer" 'NR>1 && $1==name {print $2; exit}')"
-              if [ -n "$ip" ]; then
-                echo "$ip"
-                return 0
-              fi
-              sleep 2
-            done
-            return 1
-          }
-
-          client2_ip="$(wait_for_peer_ip client1 client2)"
-          client1_ip="$(wait_for_peer_ip client2 client1)"
-
-          docker compose exec -T client1 ping -c 3 "$client2_ip"
-          docker compose exec -T client2 ping -c 3 "$client1_ip"
+      - run: bash ./scripts/compose-check.sh
       - if: always()
         run: docker compose down -v
